@@ -1,3 +1,4 @@
-*.swp
+*.sw*
 vendor/**
+tests/coverage/**
 /nbproject/**
