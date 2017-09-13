@@ -14,6 +14,8 @@ class FlowChartImage
     private $boxProperties;
     private $backgroundColor;
 
+    const MAX_CHARS_PER_LINE = 10;
+
     public function generate()
     {
         $this->jsonData = json_decode(utf8_encode($this->content));
@@ -110,18 +112,52 @@ class FlowChartImage
 
         $size = 5;
         if (strlen($text) > 10) {
-            $size = 3;
-        }
-        if (strlen($text) > 15) {
-            $size = 1;
+            $size = 4;
         }
 
         $fw   = imagefontwidth($size);
-        $l    = strlen($text);
-        $tw   = $l * $fw;
-        $iw   = 100;
-        $xpos = ($iw - $tw) / 2;
-        imagestring($this->imageHandle, $size, $left + $xpos, $top + 40, utf8_decode($text), $black);
+
+        $chunkedText = self::chunkText($text);
+
+        foreach($chunkedText as $key => $line) {
+
+            $l    = strlen($line);
+            $tw   = $l * $fw;
+            $iw   = 100;
+            $xpos = ($iw - $tw) / 2;
+
+            $topIniPos = 50 - (7 * count($chunkedText));
+
+            imagestring($this->imageHandle, $size, $left + $xpos, $top + ($topIniPos + (13 * ($key + 1))), utf8_decode($line), $black);
+
+        }
+    }
+
+    public static function chunkText($text) {
+
+        $length = strlen($text);
+
+        if($length <= self::MAX_CHARS_PER_LINE) {
+            return [$text];
+        }
+
+        $chunkedText = [];
+        $line = "";
+        $words = explode(" ", $text);
+
+        foreach($words as $word) {
+
+            if(strlen($line) + strlen($word) > self::MAX_CHARS_PER_LINE && !empty($line)) {
+                $chunkedText[] = trim($line);
+                $line = "";
+            }
+
+            $line .= $word . " ";
+        }
+
+        $chunkedText[] = trim($line);
+
+        return $chunkedText;
     }
 
     public function drawConnector($originTop, $originLeft, $destinTop, $destinLeft, $text, $positionOrigin,
@@ -333,7 +369,7 @@ class FlowChartImage
             list($topDestin, $leftDestin) = $positionDestin;
 
             $this->drawConnector($topOrigin, $leftOrigin, $topDestin, $leftDestin, $edge->data->label,
-            $edge->data->positionSource, $edge->data->positionTarget);
+                $edge->data->positionSource, $edge->data->positionTarget);
         }
     }
 
