@@ -7,7 +7,7 @@ class FlowChartImageTest extends TestCase
 {
     public function testToPngShouldGenerateCorrectly()
     {
-        $expected = 'e51fb07e78eebe558a22048c18d97909';
+        $expected = 'e8d065ac24600682639ef29238195c2c';
         $image = new FlowChartImage();
         $image->setContent($this->simpleFlowchart());
         $image->generate();
@@ -101,6 +101,19 @@ class FlowChartImageTest extends TestCase
             ]
         ];
         return json_encode($flowchart);
+    }
+
+    public function testChunkTextMustTurnStringInArrayOfChunkedStrings()
+    {
+        $input = "123456789asdf 0123456789 abcdefgh lorem ipsu";
+        $expected = [
+            '123456789asdf',
+            '0123456789',
+            'abcdefgh',
+            'lorem ipsu'
+        ];
+
+        $this->assertEquals($expected, FlowChartImage::chunkText($input));
     }
 }
 
